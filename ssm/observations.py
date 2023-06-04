@@ -628,7 +628,7 @@ class CategoricalObservations(Observations):
 
 class InputDrivenObservations(Observations):
 
-    def __init__(self, K, D, M=0, C=2, prior_mean = 0, prior_sigma=1000):
+    def __init__(self, K, D, M=0, C=2, prior_mean = 0, prior_sigma=1000, regularization='l2'):
         """
         @param K: number of states
         @param D: dimensionality of output
@@ -641,6 +641,7 @@ class InputDrivenObservations(Observations):
         self.M = M
         self.D = D
         self.K = K
+        self.regularization = regularization
         self.prior_mean = prior_mean
         self.prior_sigma = prior_sigma
         # Parameters linking input to distribution over output classes
@@ -740,7 +741,10 @@ class InputDrivenObservations(Observations):
 
             # add contribution of prior:
             if self.prior_sigma != 0:
-                obj += 1/(2*self.prior_sigma**2)*np.sum(W**2)
+                if self.regularization == 'l2':
+                    obj += 1/(2*self.prior_sigma**2)*np.sum(W**2)
+                elif self.regularization == 'l1':
+                    obj += 1/(self.prior_sigma**2)*np.sum(np.abs(W))
             return obj / T
 
         def _gradient(params, k):
@@ -761,7 +765,10 @@ class InputDrivenObservations(Observations):
                 grad  += (df - data_one_hot[:,:-1]).T@(expected_states[:, [k]]*input) #gradient is shape (C-1,M)
             # Add contribution to gradient from prior:
             if self.prior_sigma != 0:
-                grad += (1/(self.prior_sigma)**2)*W
+                if self.regularization == 'l2':
+                    grad += (1/(self.prior_sigma)**2)*W
+                elif self.regularization == 'l1':
+                    grad += (1/(self.prior_sigma)**2)*np.sign(W)
             # Now flatten grad into a vector:
             grad = grad.flatten()
             return grad/T
@@ -797,7 +804,8 @@ class InputDrivenObservations(Observations):
                 hess += temp_hess - Xdf.T@pXdf
             # add contribution of prior to hessian
             if self.prior_sigma != 0:
-                hess += (1 / (self.prior_sigma) ** 2)
+                if self.regularization == 'l2':
+                    hess += (1 / (self.prior_sigma) ** 2)
             return hess/T
 
         from scipy.optimize import minimize
