@@ -51,7 +51,7 @@ The notebooks folder has more thorough, complete examples of HMMs, SLDS, and rec
 
 # Installation
 ```
-git clone https://github.com/lindermanlab/ssm
+git clone https://github.com/sarathnayar/ssm
 cd ssm
 pip install numpy cython
 pip install -e .
