@@ -216,7 +216,7 @@ class InputDrivenTransitions(StickyTransitions):
     determined by a generalized linear model applied to the
     exogenous input.
     """
-    def __init__(self, K, D, M, alpha=1, kappa=0, l2_penalty=0.0):
+    def __init__(self, K, D, M, alpha=1, kappa=0, l2_penalty=0.0, l1_penalty=0.0):
         super(InputDrivenTransitions, self).__init__(K, D, M=M, alpha=alpha, kappa=kappa)
 
         # Parameters linking input to state distribution
@@ -242,7 +242,10 @@ class InputDrivenTransitions(StickyTransitions):
 
     def log_prior(self):
         lp = super(InputDrivenTransitions, self).log_prior()
-        lp = lp + np.sum(-0.5 * self.l2_penalty * self.Ws**2)
+        if self.l2_penalty != 0.0:
+            lp = lp + np.sum(-0.5 * self.l2_penalty * self.Ws**2)
+        elif self.l1_penalty != 0.0:
+            lp = lp + np.sum(-0.5 * self.l1_penalty * np.abs(self.Ws))
         return lp
 
     def log_transition_matrices(self, data, input, mask, tag):
