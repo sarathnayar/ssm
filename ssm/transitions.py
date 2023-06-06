@@ -245,7 +245,7 @@ class InputDrivenTransitions(StickyTransitions):
         if self.l2_penalty != 0.0:
             lp = lp + np.sum(-0.5 * self.l2_penalty * self.Ws**2)
         elif self.l1_penalty != 0.0:
-            lp = lp + np.sum(-0.5 * self.l1_penalty * np.abs(self.Ws))
+            lp = lp + np.sum(-self.l1_penalty * np.abs(self.Ws))
         return lp
 
     def log_transition_matrices(self, data, input, mask, tag):
